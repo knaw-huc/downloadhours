@@ -1,4 +1,4 @@
-Step 1: Go [https://developers.google.com/sheets/api/quickstart/nodejs](here) and click the big blue button to create credentials
+Step 1: Go [here](https://developers.google.com/sheets/api/quickstart/nodejs) and click the big blue button to create credentials
 
 Step 2: run the container with `docker run --rm -it -v "$PWD/credentials.json":/app/credentials.json -v "$PWD/state":/app/state knawhuc/downloadhours <last weeknumber to import> <google sheetids> > my_export.csv`
 

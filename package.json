@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "none",
   "dependencies": {
+    "args": "^5.0.1",
     "googleapis": "39"
   }
 }

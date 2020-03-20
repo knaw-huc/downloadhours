@@ -135,10 +135,10 @@ function getWeek(srcDate) {
                         - 3 + (week1.getDay() + 6) % 7) / 7);
 }
 
-async function run(spreadsheetIds, endweek) {
+async function run(spreadsheetIds, endweek, dryrun) {
   const aggregateData = {}
   for (const spreadsheetId of spreadsheetIds) {
-    await downloadHours({aggregateData, spreadsheetId, endweek})
+    await downloadHours({aggregateData, spreadsheetId, endweek, dryrun})
   }
   printData(aggregateData);
 }
@@ -148,7 +148,7 @@ const HOUR_DATA_HEADER_ROW = 52
 const HOUR_DATA_START_ROW = 53
 const WEEK_START_COL = [6, 7, 12, 16]
 
-async function downloadHours({aggregateData, spreadsheetId, endweek}) {
+async function downloadHours({aggregateData, spreadsheetId, endweek, dryrun}) {
   const auth = await authorize(JSON.parse(fs.readFileSync('credentials.json', "utf-8")));
   const sheets = google.sheets({version: 'v4', auth});
   const [empError, employees] = await getEmployeeInfo(sheets);
@@ -181,7 +181,7 @@ async function downloadHours({aggregateData, spreadsheetId, endweek}) {
 
     console.error(`Exporting ${tab.title} ${JSON.stringify(weeks.map(x => x[0]))}`)
 
-    if (weeks.length > 0) {
+    if (weeks.length > 0 && !dryrun) {
       await sheets.spreadsheets.batchUpdate({
         spreadsheetId,
         requestBody: {
@@ -279,7 +279,33 @@ function parseSheetDate(num) {
   return new Date(1900, 0, num - 1);
 }
 
-run(process.argv.slice(3), +process.argv[2]).catch(e => console.error(e))  
+const args = require('args')
+
+args
+  .option('dry', "Do a dry-run and don't mark the weeks readonly in the google sheet", false)
+  .option('sheets', 'The sheets to export hours from', [])
+  .option('finalweek', 'The week where we stop exporting (e.g. 202001 for the first week of 2020)', -1)
+
+const flags = args.parse(process.argv)
+
+console.log(flags)
+if (flags.sheets == null || flags.sheets.filter(x => typeof x === "string").length === 0) {
+  process.exitCode = 1
+  console.error("Please list at least one sheet to export hours from")
+}
+
+if (flags.finalweek < 202001) {
+  process.exitCode = 1
+  console.error("Please specify a week after 202001 to stop exporting")
+}
+
+if (process.exitCode != 1) {
+  run(
+    flags.sheets.filter(x => typeof x === "string"),
+    flags.finalweek,
+    flags.dry
+  ).catch(e => console.error(e))
+}
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the

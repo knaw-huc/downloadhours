@@ -181,26 +181,28 @@ async function downloadHours({aggregateData, spreadsheetId, endweek, dryrun}) {
 
     console.error(`Exporting ${tab.title} ${JSON.stringify(weeks.map(x => x[0]))}`)
 
-    if (weeks.length > 0 && !dryrun) {
-      await sheets.spreadsheets.batchUpdate({
-        spreadsheetId,
-        requestBody: {
-          requests: weeks.map(([weeknum, weekStart, weekEnd]) => ({
-            "addProtectedRange": {
-              "protectedRange": {
-                description: `The cells for week ${weeknum} were already exported to timetell`,
-                range: {
-                  sheetId: tab.sheetId,
-                  startColumnIndex: weekStart,
-                  endColumnIndex: weekEnd,
-                  startRowIndex: HOUR_DATA_START_ROW  - 1
-                },
-                warningOnly: true
+    if (weeks.length > 0) {
+      if (!dryrun) {
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId,
+          requestBody: {
+            requests: weeks.map(([weeknum, weekStart, weekEnd]) => ({
+              "addProtectedRange": {
+                "protectedRange": {
+                  description: `The cells for week ${weeknum} were already exported to timetell`,
+                  range: {
+                    sheetId: tab.sheetId,
+                    startColumnIndex: weekStart,
+                    endColumnIndex: weekEnd,
+                    startRowIndex: HOUR_DATA_START_ROW  - 1
+                  },
+                  warningOnly: true
+                }
               }
-            }
-          }))
-        }
-      });
+            }))
+          }
+        });
+      }
     
       if (header[0] !== 'Project\n(voor werk dat \ntussendoor komt)' || header[18] !== 'TOTAAL') {
         console.error(`values segment (${valueSegment}) mismatch. It does not start with 'Project\\n(voor werk dat \\ntussendoor komt)' or it does not end with 'TOTAAL'.`)
@@ -269,7 +271,7 @@ function printData(aggregateData) {
       is_act ? code : "",
       is_act ? "" : code,
       datum,
-      uren,
+      uren.toFixed(2),
       opmerking.join(", ")
     ].map(x => JSON.stringify(x)).join(";"))
   }

@@ -262,7 +262,7 @@ async function downloadHours({aggregateData, spreadsheetId, endweek, dryrun}) {
 }
 
 function printData(aggregateData) {
-  console.log(["MED_NR","ACT_NR","PRJ_NR","DATUM","UREN"].join(","))
+  console.log(`"MED_NR";"ACT_NR";"PRJ_NR";"DATUM";"UREN"`)
   for (const key in aggregateData) {
     const [medewerker, code, is_act, datum] = JSON.parse(key)
     const [uren, opmerking] = aggregateData[key]

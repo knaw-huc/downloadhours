@@ -1,3 +1,7 @@
+# DEPRECATED
+## code not in use any more (by HuC)
+
+
 Step 1: Go [here](https://developers.google.com/sheets/api/quickstart/nodejs) and click the big blue button to create credentials
 
 Step 2: run the container with `docker run --rm -it -v "$PWD/credentials.json":/app/credentials.json -v "$PWD/state":/app/state knawhuc/downloadhours -f <last weeknumber to import> -s <google sheetid1> -s <google sheetid2> -d > my_export.csv`
